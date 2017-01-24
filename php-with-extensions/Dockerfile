@@ -5,7 +5,7 @@ MAINTAINER Sam Mousa <sam@mousa.nl>
 # Add php.ini directives.
 RUN echo memory_limit=1G > /usr/local/etc/php/php.ini
 
-RUN apk add --update --no-cache icu-dev tini git
+RUN apk add --update --no-cache icu-dev tini git openssh-client
 RUN docker-php-ext-install sockets pcntl intl pdo pdo_mysql
 
 # Install composer
