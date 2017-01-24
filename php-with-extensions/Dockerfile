@@ -21,8 +21,6 @@ RUN cd /tmp && \
     cp wait-for-it.phar /bin/wait-for-it && \
     rm -rf /tmp/*
 
-
-ENTRYPOINT ["/sbin/tini", "--"]
 # Install php-gd
 #RUN apt-get update && \
 #    apt-get -y install libjpeg-dev libpng-dev libfreetype6-dev && \
