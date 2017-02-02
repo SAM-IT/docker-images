@@ -7,4 +7,4 @@ RUN apk add --no-cache --update build-base python curl
 RUN mkdir -p /opt/yarn && \
     curl -L https://yarnpkg.com/latest.tar.gz | tar xzv -C /opt/yarn && \
     ln -s /opt/yarn/dist/bin/yarn /bin/yarn
-RUN yarn global add angular-cli
+RUN yarn global add @angular/cli
