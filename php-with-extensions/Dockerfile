@@ -5,12 +5,16 @@ MAINTAINER Sam Mousa <sam@mousa.nl>
 # Add php.ini directives.
 RUN echo memory_limit=1G > /usr/local/etc/php/php.ini
 
-RUN apk add --update --no-cache icu-dev tini git openssh-client libmcrypt-dev
+RUN apk add --update --no-cache icu-dev tini git openssh-client libmcrypt-dev poppler-utils
 RUN docker-php-ext-install sockets pcntl intl pdo pdo_mysql mcrypt
 
 # Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/bin --filename=composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/bin --filename=composer && \
+    composer global config bin-dir /bin
 
+# fxp/composer-asset-plugin && codeception
+RUN composer -n global require fxp/composer-asset-plugin codeception/codeception redcomponent/teststatistics && \
+    composer clear-cache
 
 # Install php wait-for-it
 RUN cd /tmp && \
@@ -21,6 +25,11 @@ RUN cd /tmp && \
     cp wait-for-it.phar /bin/wait-for-it && \
     rm -rf /tmp/*
 
+
+# Install codeception
+RUN wget http://codeception.com/codecept.phar && \
+    chmod +x codecept.phar && \
+    mv codecept.phar /usr/local/bin/codecept
 # Install php-gd
 #RUN apt-get update && \
 #    apt-get -y install libjpeg-dev libpng-dev libfreetype6-dev && \
