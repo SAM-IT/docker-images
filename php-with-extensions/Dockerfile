@@ -1,16 +1,42 @@
-FROM php:7-alpine
+FROM alpine:edge
 
 MAINTAINER Sam Mousa <sam@mousa.nl>
 
-# Add php.ini directives.
-RUN echo memory_limit=1G > /usr/local/etc/php/php.ini
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 
-RUN apk add --update --no-cache icu-dev tini git openssh-client libmcrypt-dev poppler-utils
-RUN docker-php-ext-install sockets pcntl intl pdo pdo_mysql mcrypt
+RUN apk add --update --no-cache \
+    tini \
+    curl \
+    git \
+    openssh-client \
+    poppler-utils \
+    php7.1 \
+    php7.1-sockets \
+    php7.1-xml \
+    php7.1-xmlreader \
+    php7.1-pdo_mysql \
+    php7.1-intl \
+    php7.1-sockets \
+    php7.1-pcntl \
+    php7.1-zip \
+    php7.1-json \
+    php7.1-phar \
+    php7.1-dom \
+    php7.1-mbstring \
+    php7.1-zlib \
+    php7.1-ctype \
+    php7.1-pcntl \
+    php7.1-curl
+
+
+
+# Add php.ini directives.
+RUN echo memory_limit=1G > /etc/php7.1/php.ini
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/bin --filename=composer && \
-    composer global config bin-dir /bin
+    composer global config bin-dir /bin && \
+    composer global config vendor-dir /vendor
 
 # fxp/composer-asset-plugin && codeception
 RUN composer -n global require fxp/composer-asset-plugin codeception/codeception redcomponent/teststatistics && \
@@ -25,16 +51,4 @@ RUN cd /tmp && \
     cp wait-for-it.phar /bin/wait-for-it && \
     rm -rf /tmp/*
 
-
-# Install codeception
-RUN wget http://codeception.com/codecept.phar && \
-    chmod +x codecept.phar && \
-    mv codecept.phar /usr/local/bin/codecept
-# Install php-gd
-#RUN apt-get update && \
-#    apt-get -y install libjpeg-dev libpng-dev libfreetype6-dev && \
-#    docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr && \
-#    docker-php-ext-install gd && \
-#    apt-get -y purge libpng-dev libfreetype6-dev && \
-#    rm -rf /var/lib/apt/lists/*
-#
+WORKDIR /project
