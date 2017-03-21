@@ -26,7 +26,8 @@ RUN apk add --update --no-cache \
     php7.1-zlib \
     php7.1-ctype \
     php7.1-pcntl \
-    php7.1-curl
+    php7.1-curl \
+    php7.1-session
 
 
 
