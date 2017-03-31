@@ -10,29 +10,34 @@ RUN apk add --update --no-cache \
     git \
     openssh-client \
     poppler-utils \
-    php7.1 \
-    php7.1-sockets \
-    php7.1-xml \
-    php7.1-xmlreader \
-    php7.1-pdo_mysql \
-    php7.1-intl \
-    php7.1-sockets \
-    php7.1-pcntl \
-    php7.1-zip \
-    php7.1-json \
-    php7.1-phar \
-    php7.1-dom \
-    php7.1-mbstring \
-    php7.1-zlib \
-    php7.1-ctype \
-    php7.1-pcntl \
-    php7.1-curl \
-    php7.1-session
+    php7 \
+    php7-sockets \
+    php7-xml \
+    php7-xmlreader \
+    php7-pdo_mysql \
+    php7-intl \
+    php7-sockets \
+    php7-pcntl \
+    php7-zip \
+    php7-json \
+    php7-phar \
+    php7-dom \
+    php7-mbstring \
+    php7-zlib \
+    php7-ctype \
+    php7-pcntl \
+    php7-curl \
+    php7-mcrypt \
+    php7-xmlwriter \
+    php7-session \
+    php7-posix \
+    php7-pdo_sqlite \ 
+    php7-pdo
 
 
 
 # Add php.ini directives.
-RUN echo memory_limit=1G > /etc/php7.1/php.ini
+RUN echo memory_limit=1G > /etc/php7/php.ini
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/bin --filename=composer && \
