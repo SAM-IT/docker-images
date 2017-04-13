@@ -33,7 +33,9 @@ RUN apk add --update --no-cache \
     php7-posix \
     php7-pdo_sqlite \ 
     php7-pdo \
-    php7-soap
+    php7-soap \
+    php7-gd \
+    php7-fileinfo
 
 
 
