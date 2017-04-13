@@ -35,7 +35,8 @@ RUN apk add --update --no-cache \
     php7-pdo \
     php7-soap \
     php7-gd \
-    php7-fileinfo
+    php7-fileinfo \
+    php7-iconv
 
 
 
