@@ -1,0 +1,126 @@
+#!/bin/bash
+set -eo pipefail
+shopt -s nullglob
+
+# if command starts with an option, prepend mysqld
+if [ "${1:0:1}" = '-' ]; then
+	set -- mysqld "$@"
+fi
+
+# skip setup if they want an option that stops mysqld
+wantHelp=
+for arg; do
+	case "$arg" in
+		-'?'|--help|--print-defaults|-V|--version)
+			wantHelp=1
+			break
+			;;
+	esac
+done
+
+# usage: file_env VAR [DEFAULT]
+#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
+# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
+#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
+file_env() {
+	local var="$1"
+	local fileVar="${var}_FILE"
+	local def="${2:-}"
+	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
+		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+		exit 1
+	fi
+	local val="$def"
+	if [ "${!var:-}" ]; then
+		val="${!var}"
+	elif [ "${!fileVar:-}" ]; then
+		val="$(< "${!fileVar}")"
+	fi
+	export "$var"="$val"
+	unset "$fileVar"
+}
+
+_check_config() {
+	toRun=( "$@" --verbose --help --log-bin-index="$(mktemp -u)" )
+	if ! errors="$("${toRun[@]}" 2>&1 >/dev/null)"; then
+		cat >&2 <<-EOM
+			ERROR: mysqld failed while attempting to check config
+			command was: "${toRun[*]}"
+			$errors
+		EOM
+		exit 1
+	fi
+}
+
+# Fetch value from server config
+# We use mysqld --verbose --help instead of my_print_defaults because the
+# latter only show values present in config files, and not server defaults
+_get_config() {
+	local conf="$1"; shift
+	"$@" --verbose --help --log-bin-index="$(mktemp -u)" 2>/dev/null | awk '$1 == "'"$conf"'" { print $2; exit }'
+}
+
+# allow the container to be started with `--user`
+if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
+	_check_config "$@"
+	DATADIR="$(_get_config 'datadir' "$@")"
+	mkdir -p "$DATADIR"
+	chown -R mysql:mysql "$DATADIR"
+	exec gosu mysql "$BASH_SOURCE" "$@"
+fi
+
+if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
+	# still need to check config, container may have started with --user
+	_check_config "$@"
+	# Get config
+	DATADIR="$(_get_config 'datadir' "$@")"
+
+	if [ ! -d "$DATADIR/mysql" ]; then
+		mkdir -p "$DATADIR"
+
+		echo 'Initializing database'
+        cp -rp /var/lib/mysql-template/* $DATADIR
+		echo 'Database initialized'
+	fi
+fi
+
+CMD="$@"
+if [[ ! $CMD == mysqld* ]]; then
+    exec $CMD
+fi
+
+
+_exec_with_address() {
+    CMD="$CMD --wsrep-on=on --binlog_format=row --wsrep-provider=/usr/lib/libgalera_smm.so --wsrep-cluster-address=$1";
+    echo Executing $CMD
+    exec $CMD
+
+}
+
+# Recover from crash, don't start new cluster.
+if [ -f "$DATADIR/gvwstate.dat" ]; then
+    _exec_with_address "gcomm://$(giddyup ip stringify)"
+fi
+
+echo "Checking if we are leader...";
+# We are not leader, don't start new cluster.
+if giddyup leader check; then
+    echo "We are leader!"
+else
+    echo "We are not leader!"
+    _exec_with_address "gcomm://$(giddyup ip stringify)"
+fi
+
+
+
+# We are leader and scale = 1, start new cluster.
+if [ "$(giddyup service scale)" -eq "1" ]; then
+    echo "Scale is 1, starting new cluster."
+    _exec_with_address "gcomm://";
+fi
+
+# We are leader, scale > 1.
+echo "Leader and scale > 1, don't know what to do..."
+
+
+
