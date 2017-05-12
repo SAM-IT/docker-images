@@ -97,6 +97,11 @@ _exec_with_address() {
 
 }
 
+if [ -f "$DATADIR/grastate.dat" ] && grep "safe_to_bootstrap: 1" "$DATADIR/grastate.dat"; then
+    echo "Found state file with 'safe_to_bootstrap: 1'; node is safe to bootstrap.";
+#    _exec_with_address "gcomm://"
+fi
+
 # Recover from crash, don't start new cluster.
 if [ -f "$DATADIR/gvwstate.dat" ]; then
     _exec_with_address "gcomm://$(giddyup ip stringify)"
@@ -119,8 +124,18 @@ if [ "$(giddyup service scale)" -eq "1" ]; then
     _exec_with_address "gcomm://";
 fi
 
-# We are leader, scale > 1.
-echo "Leader and scale > 1, don't know what to do..."
+BASEURL=http://rancher-metadata/2015-12-19/self
+SERVICE=$(curl $BASEURL/service/name)
+STACK=$(curl $BASEURL/stack/name)
 
+# We are leader, scale > 1.
+echo "Probing for node that's alive..."
+if giddyup probe -m 2s -n 10 --loop tcp://$SERVICE.$STACK:3306; then
+    echo "Found alive node."
+    _exec_with_address "gcomm://$(giddyup ip stringify)"
+else
+    echo "No node alive, launching new cluster."
+    _exec_with_address "gcomm://";
+fi
 
 

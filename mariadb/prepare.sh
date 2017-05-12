@@ -16,7 +16,7 @@ mysql=( mysql --protocol=socket -uroot -hlocalhost --socket="/tmp/mysqld.sock" )
 			if echo 'SELECT 1' | "${mysql[@]}" &> /dev/null; then
 				break
 			fi
-			echo 'Waiting for mysqld to come UP...'
+			echo "Waiting for mysqld to come UP... $i"
 			sleep 1
 		done
 mysql_tzinfo_to_sql /usr/share/zoneinfo | "${mysql[@]}" mysql

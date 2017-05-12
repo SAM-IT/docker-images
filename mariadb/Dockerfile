@@ -8,8 +8,9 @@ RUN mysql_install_db \
     && rm /var/lib/mysql-template/ib_logfile*
 COPY prepare.sh /prepare.sh
 RUN /prepare.sh
-#RUN mysqld --initialize --user=mysql
-RUN apt-get update && apt-get install -y --no-install-recommends
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 ENV TINI_VERSION v0.14.0
 ENV GIDDYUP_VERSION v0.16.0
 ADD https://github.com/rancher/giddyup/releases/download/v0.16.0/giddyup /bin/giddyup
