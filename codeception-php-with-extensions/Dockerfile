@@ -21,7 +21,7 @@ RUN apt-get update && \
 
 # Install php mcrypt.
 RUN apt-get update && \
-    apt-get -y install --no-install-recommends libmcrypt-dev && \
+    apt-get -y install --no-install-recommends libmcrypt-dev tini && \
     docker-php-ext-install mcrypt && \
     apt-get -y purge libmcrypt-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -45,15 +45,12 @@ RUN cd /tmp && \
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/bin --filename=composer
 
-# fxp/composer-asset-plugin
-RUN composer -n global require fxp/composer-asset-plugin && \
-    composer clear-cache
-
 # Install php wait-for-it
 RUN cd /tmp && \
     git clone  --branch v0.6.0 https://github.com/SAM-IT/wait-for-it-php.git && \
     cd wait-for-it-php && \
     composer install && \
+    composer clear-cache && \
     php -d phar.readonly=0 build.php && \
     cp wait-for-it.phar /bin/wait-for-it && \
     rm -rf /tmp/*

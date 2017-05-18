@@ -73,13 +73,19 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 	# still need to check config, container may have started with --user
 	_check_config "$@"
 	# Get config
-	DATADIR="$(_get_config 'datadir' "$@")"
+	export DATADIR="$(_get_config 'datadir' "$@")"
 
 	if [ ! -d "$DATADIR/mysql" ]; then
+	    echo 'Initializing database'
 		mkdir -p "$DATADIR"
+        mysql_install_db \
+        --no-defaults \
+        --user=mysql \
+        --datadir=$DATADIR \
+        --skip-name-resolve \
+        --cross-bootstrap
 
-		echo 'Initializing database'
-        cp -rp /var/lib/mysql-template/* $DATADIR
+        /prepare.sh
 		echo 'Database initialized'
 	fi
 fi
@@ -91,7 +97,7 @@ fi
 
 
 _exec_with_address() {
-    CMD="$CMD --wsrep-on=on --binlog_format=row --wsrep-provider=/usr/lib/libgalera_smm.so --wsrep-cluster-address=$1";
+    CMD="$CMD --wsrep-cluster-address=$1";
     echo Executing $CMD
     exec $CMD
 

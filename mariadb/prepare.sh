@@ -1,5 +1,5 @@
 #!/bin/bash
-rm /prepare.sh
+#rm /prepare.sh
 
 _get_config() {
 	local conf="$1"; shift
@@ -8,7 +8,7 @@ _get_config() {
 
 
 
-mysqld --user=mysql --skip-networking --socket=/tmp/mysqld.sock --datadir=/var/lib/mysql-template &
+mysqld --no-defaults --user=mysql --skip-networking --socket=/tmp/mysqld.sock --datadir=$DATADIR &
 pid="$!"
 mysql=( mysql --protocol=socket -uroot -hlocalhost --socket="/tmp/mysqld.sock" )
 
@@ -27,4 +27,4 @@ if ! wait "$pid"; then
     exit 1
 fi
 
-rm /var/lib/mysql-template/ib_logfile*
+#rm /var/lib/mysql-template/ib_logfile*

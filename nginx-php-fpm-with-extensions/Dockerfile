@@ -1,4 +1,4 @@
-FROM richarvey/nginx-php-fpm:php7
+FROM richarvey/nginx-php-fpm:php71
 MAINTAINER Sam Mousa <sam@mousa.nl>
 
 RUN apk --update add build-base
