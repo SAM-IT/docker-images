@@ -69,6 +69,13 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 	exec gosu mysql "$BASH_SOURCE" "$@"
 fi
 
+if [ -z "$INNODB_PAGE_SIZE" ]; then
+export INNODB_PAGE_SIZE=16k
+echo "innodb_page_size=$INNODB_PAGE_SIZE" > /etc/mysql/conf.d/innodb_page_size.cnf
+fi
+
+
+
 if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 	# still need to check config, container may have started with --user
 	_check_config "$@"
@@ -82,6 +89,7 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
         --no-defaults \
         --user=mysql \
         --datadir=$DATADIR \
+        --innodb-page-size=$INNODB_PAGE_SIZE \
         --skip-name-resolve \
         --cross-bootstrap
 
@@ -113,8 +121,13 @@ if [ -f "$DATADIR/gvwstate.dat" ]; then
     _exec_with_address "gcomm://$(giddyup ip stringify)"
 fi
 
-echo "Checking if we are leader...";
 # We are not leader, don't start new cluster.
+if [ ! -z "$norancher" ]; then
+    echo "No rancher, starting new cluster."
+    _exec_with_address "gcomm://";
+fi
+
+echo "Checking if we are leader...";
 if giddyup leader check; then
     echo "We are leader!"
 else

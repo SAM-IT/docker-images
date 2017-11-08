@@ -8,7 +8,7 @@ _get_config() {
 
 
 
-mysqld --no-defaults --user=mysql --skip-networking --socket=/tmp/mysqld.sock --datadir=$DATADIR &
+mysqld --no-defaults --user=mysql --innodb-page-size=$INNODB_PAGE_SIZE --skip-networking --socket=/tmp/mysqld.sock --datadir=$DATADIR &
 pid="$!"
 mysql=( mysql --protocol=socket -uroot -hlocalhost --socket="/tmp/mysqld.sock" )
 

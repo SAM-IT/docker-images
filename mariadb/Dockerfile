@@ -12,9 +12,9 @@ COPY conf.d /etc/mysql/conf.d
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
-ENV TINI_VERSION v0.14.0
-ENV GIDDYUP_VERSION v0.16.0
-ADD https://github.com/rancher/giddyup/releases/download/v0.16.0/giddyup /bin/giddyup
+ENV TINI_VERSION v0.16.1
+ENV GIDDYUP_VERSION v0.19.0
+ADD https://github.com/rancher/giddyup/releases/download/${GIDDYUP_VERSION}/giddyup /bin/giddyup
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini.asc /bin/tini.asc
 RUN gpg \
