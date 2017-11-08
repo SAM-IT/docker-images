@@ -1,5 +1,5 @@
 #!/bin/bash
-#rm /prepare.sh
+echo "prepare";
 
 _get_config() {
 	local conf="$1"; shift

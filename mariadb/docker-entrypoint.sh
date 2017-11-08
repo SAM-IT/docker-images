@@ -2,21 +2,22 @@
 set -eo pipefail
 shopt -s nullglob
 
+if [ ! -e "/etc/mysql/conf.d/innodb_page_size.cnf" ]; then
+
+    if [ -z "$INNODB_PAGE_SIZE" ]; then
+    export INNODB_PAGE_SIZE=16k
+    fi
+    echo "[mysqld]" > /etc/mysql/conf.d/innodb_page_size.cnf
+    echo "innodb_page_size=$INNODB_PAGE_SIZE" >> /etc/mysql/conf.d/innodb_page_size.cnf
+fi
+
+
+
+
 # if command starts with an option, prepend mysqld
 if [ "${1:0:1}" = '-' ]; then
 	set -- mysqld "$@"
 fi
-
-# skip setup if they want an option that stops mysqld
-wantHelp=
-for arg; do
-	case "$arg" in
-		-'?'|--help|--print-defaults|-V|--version)
-			wantHelp=1
-			break
-			;;
-	esac
-done
 
 # usage: file_env VAR [DEFAULT]
 #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
@@ -69,10 +70,6 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 	exec gosu mysql "$BASH_SOURCE" "$@"
 fi
 
-if [ -z "$INNODB_PAGE_SIZE" ]; then
-export INNODB_PAGE_SIZE=16k
-echo "innodb_page_size=$INNODB_PAGE_SIZE" > /etc/mysql/conf.d/innodb_page_size.cnf
-fi
 
 
 
@@ -93,7 +90,7 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
         --skip-name-resolve \
         --cross-bootstrap
 
-        /prepare.sh
+#        /prepare.sh
 		echo 'Database initialized'
 	fi
 fi
