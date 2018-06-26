@@ -4,7 +4,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/docker-entrypoint.sh"]
 CMD ["mysqld"]
-ENV TINI_VERSION v0.16.1
+ENV TINI_VERSION v0.18.0
 ENV GIDDYUP_VERSION v0.19.0
 RUN gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 595E85A6B1B4779EA4DAAEC70B588DFF0527A9B7
 
@@ -19,3 +19,4 @@ RUN gpg --verify /bin/tini.asc \
 COPY docker-entrypoint.sh /usr/local/bin/
 COPY prepare.sh /prepare.sh
 COPY conf.d /etc/mysql/conf.d
+COPY healthcheck.sh /usr/local/bin/healthcheck.sh

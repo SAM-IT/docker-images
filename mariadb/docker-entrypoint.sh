@@ -102,6 +102,8 @@ fi
 
 
 _exec_with_address() {
+    echo Starting health check service
+    giddyup health --check-command healthcheck.sh &
     CMD="$CMD --wsrep-cluster-address=$1";
     echo Executing $CMD
     exec $CMD
